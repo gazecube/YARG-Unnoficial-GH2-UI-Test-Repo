@@ -12,6 +12,14 @@ namespace YARG.Menu.Main
 
         private void Start()
         {
+            // RB2 uses authored camera shots for each focused main-menu item.
+            // Do not apply YARG's cursor-driven parallax when the RB2 presenter is active.
+            if (FindAnyObjectByType<RB2MainMenuPresenter>() != null)
+            {
+                enabled = false;
+                return;
+            }
+
             _cameraContainer.transform.position = new Vector3(0, 2f, 0);
         }
 
