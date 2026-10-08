@@ -13,12 +13,23 @@ namespace YARG.Menu.Main
     {
         private static bool _antiPiracyDialogShown;
 
+        private RB2MainMenuPresenter _rb2Presenter;
+
         [SerializeField]
         private TextMeshProUGUI _versionText;
 
         private void Start()
         {
             _versionText.text = GlobalVariables.Instance.CurrentVersion;
+
+            // RB2 UI experiment: keep YARG's existing menu actions/backend, but hand the
+            // presentation of the main-menu selection to an RB2-style presenter.
+            // The presenter is added at runtime so the stock prefab remains usable while
+            // we progressively port the authored RB2 scene and animation data.
+            if (!TryGetComponent(out _rb2Presenter))
+            {
+                _rb2Presenter = gameObject.AddComponent<RB2MainMenuPresenter>();
+            }
 
             // Show the anti-piracy dialog if it hasn't been shown already
             // Also only show it once per game launch
