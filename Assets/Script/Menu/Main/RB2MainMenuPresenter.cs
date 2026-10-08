@@ -90,6 +90,14 @@ namespace YARG.Menu.Main
             BuildEntryCache();
         }
 
+        private void Start()
+        {
+            // LocalizedText components on the stock YARG prefab may apply their
+            // localization after Awake. Re-apply the authored RB2 labels once all
+            // components have initialized.
+            ConfigureRb2TopLevelEntries();
+        }
+
         private void OnEnable()
         {
             if (_navigationGroup == null)
@@ -160,7 +168,7 @@ namespace YARG.Menu.Main
         private static void ConfigureEntry(Transform parent, string existingName, string rb2Name,
             int siblingIndex, UnityEngine.Events.UnityAction action)
         {
-            var entry = parent.Find(existingName);
+            var entry = parent.Find(existingName) ?? parent.Find(rb2Name);
             if (entry == null)
             {
                 return;
