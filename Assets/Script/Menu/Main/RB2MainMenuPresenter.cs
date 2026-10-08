@@ -53,6 +53,7 @@ namespace YARG.Menu.Main
 
         private NavigationGroup _navigationGroup;
         private SelectionState _selectionState;
+        private MainMenu _mainMenu;
 
         /// <summary>
         /// Fired whenever the YARG selection maps to a new RB2 authored presentation key.
@@ -84,6 +85,8 @@ namespace YARG.Menu.Main
 
         private void Awake()
         {
+            _mainMenu = GetComponent<MainMenu>();
+            ConfigureRb2TopLevelEntries();
             BuildEntryCache();
         }
 
@@ -126,6 +129,60 @@ namespace YARG.Menu.Main
 
                 entry.CanvasGroup.alpha = Mathf.Lerp(entry.CanvasGroup.alpha,
                     targetAlpha, Time.unscaledDeltaTime * ANIMATION_SPEED);
+            }
+        }
+
+        private void ConfigureRb2TopLevelEntries()
+        {
+            var menuOptions = transform.Find("Menu Options");
+            if (menuOptions == null || _mainMenu == null)
+            {
+                return;
+            }
+
+            // Reuse the existing YARG menu-entry prefab instances so navigation,
+            // pointer support and layout continue to work. We only replace their
+            // labels/actions/order with RB2's original top-level shell.
+            ConfigureEntry(menuOptions, "Quickplay", "Quickplay", 0, _mainMenu.QuickPlay);
+            ConfigureEntry(menuOptions, "Profiles", "Tour", 1, null);
+            ConfigureEntry(menuOptions, "Practice", "Training", 2, _mainMenu.Practice);
+            ConfigureEntry(menuOptions, "Settings", "Options", 3, _mainMenu.Settings);
+            ConfigureEntry(menuOptions, "Replays", "Community", 4, null);
+            ConfigureEntry(menuOptions, "Credits", "Music Store", 5, null);
+
+            var exit = menuOptions.Find("Exit");
+            if (exit != null)
+            {
+                exit.gameObject.SetActive(false);
+            }
+        }
+
+        private static void ConfigureEntry(Transform parent, string existingName, string rb2Name,
+            int siblingIndex, UnityEngine.Events.UnityAction action)
+        {
+            var entry = parent.Find(existingName);
+            if (entry == null)
+            {
+                return;
+            }
+
+            entry.name = rb2Name;
+            entry.SetSiblingIndex(siblingIndex);
+
+            var text = entry.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (text != null)
+            {
+                text.text = rb2Name.ToUpperInvariant();
+            }
+
+            var button = entry.GetComponent<NavigatableButton>();
+            if (button != null)
+            {
+                button.RemoveOnClickListeners();
+                if (action != null)
+                {
+                    button.SetOnClickEvent(action);
+                }
             }
         }
 
@@ -200,24 +257,27 @@ namespace YARG.Menu.Main
                     authoredKey = "quickplay";
                     break;
 
-                case "Practice":
-                    selection = AuthoredSelection.Training;
-                    authoredKey = "training";
-                    break;
-
-                case "Settings":
-                    selection = AuthoredSelection.Options;
-                    authoredKey = "options";
-                    break;
-
-                case "Profiles":
+                case "Tour":
                     selection = AuthoredSelection.Tour;
                     authoredKey = "tour";
                     break;
 
-                case "Exit":
-                case "Replays":
-                case "Credits":
+                case "Training":
+                    selection = AuthoredSelection.Training;
+                    authoredKey = "training";
+                    break;
+
+                case "Options":
+                    selection = AuthoredSelection.Options;
+                    authoredKey = "options";
+                    break;
+
+                case "Music Store":
+                    selection = AuthoredSelection.Store;
+                    authoredKey = "store";
+                    break;
+
+                case "Community":
                 default:
                     selection = AuthoredSelection.Extras;
                     authoredKey = "extras";
